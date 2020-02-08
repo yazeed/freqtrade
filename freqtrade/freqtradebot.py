@@ -1055,9 +1055,9 @@ class FreqtradeBot:
         """
         # Get order details for actual price per unit
         if trade.open_order_id:
-            current_rate = self.get_sell_rate(trade.pair, False)
+            current_rate = self.get_sell_rate(trade.pair, True)
             # Update trade with order values
-            logger.info('Found open order for %s current_rate=%f', trade, current_rate)
+            logger.info('Found open order for %s current_rate=%.8f', trade, current_rate)
             try:
                 order = action_order or self.exchange.get_order(trade.open_order_id, trade.pair)
             except InvalidOrderException as exception:
