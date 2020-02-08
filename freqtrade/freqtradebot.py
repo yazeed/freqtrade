@@ -751,8 +751,12 @@ class FreqtradeBot:
             update_beat = self.strategy.order_types.get('stoploss_on_exchange_interval', 60)
             if (datetime.utcnow() - trade.stoploss_last_update).total_seconds() >= update_beat:
                 # cancelling the current stoploss on exchange first
-                logger.info('Trailing stoploss: cancelling current stoploss on exchange (id:{%s})'
+                logger.info('Trailing stoploss: cancelling current stoploss on exchange (id:{%s}) '
                             'in order to add another one ...', order['id'])
+                current_rate = self.get_sell_rate(trade.pair, True)
+                if trade.stop_loss > current_rate:
+                    logger.info(f"Changing trailing stop loss for {trade.pair} from {trade.stop_loss} to {current_rate}")
+                    trade.stop_loss = current_rate
                 try:
                     self.exchange.cancel_order(order['id'], trade.pair)
                 except InvalidOrderException:
@@ -1050,8 +1054,9 @@ class FreqtradeBot:
         """
         # Get order details for actual price per unit
         if trade.open_order_id:
+            current_rate = self.get_sell_rate(trade.pair, False)
             # Update trade with order values
-            logger.info('Found open order for %s', trade)
+            logger.info('Found open order for %s current_rate=%f', trade, current_rate)
             try:
                 order = action_order or self.exchange.get_order(trade.open_order_id, trade.pair)
             except InvalidOrderException as exception:
