@@ -823,14 +823,13 @@ class FreqtradeBot:
                 self.wallets.update()
                 continue
 
-            if ((order['side'] == 'buy' and order['status'] == 'canceled')
-                    or (self._check_timed_out('buy', order))):
-
-                # running get_signal on historical data fetched
+            # running get_signal on historical data fetched
                 (buy, sell) = self.strategy.get_signal(
                     trade.pair, self.strategy.ticker_interval,
                     self.dataprovider.ohlcv(trade.pair, self.strategy.ticker_interval))
 
+            if ((order['side'] == 'buy' and order['status'] == 'canceled')
+                    or (self._check_timed_out('buy', order))):
                 # proceed to cancel buy order by timeout if configuration
                 # unfilled_timeout.even_if_buy_signal_valid is true (original behaviour) -OR-
                 # cancel buy order only if buying condition is no longer valid OR if there's
@@ -842,7 +841,7 @@ class FreqtradeBot:
                     self.wallets.update()
 
             elif ((order['side'] == 'sell' and order['status'] == 'canceled')
-                  or (self._check_timed_out('sell', order))):
+                    or (self._check_timed_out('sell', order))):
                 # proceed to cancel sell order by timeout if configuration
                 # unfilled_timeout.even_if_sell_signal_valid is true (original behaviour) -OR-
                 # cancel sell order only if selling condition is no longer valid OR if there's
