@@ -824,9 +824,9 @@ class FreqtradeBot:
                 continue
 
             # running get_signal on historical data fetched
-                (buy, sell) = self.strategy.get_signal(
-                    trade.pair, self.strategy.ticker_interval,
-                    self.dataprovider.ohlcv(trade.pair, self.strategy.ticker_interval))
+            (buy, sell) = self.strategy.get_signal(
+                trade.pair, self.strategy.ticker_interval,
+                self.dataprovider.ohlcv(trade.pair, self.strategy.ticker_interval))
 
             if ((order['side'] == 'buy' and order['status'] == 'canceled')
                     or (self._check_timed_out('buy', order))):
