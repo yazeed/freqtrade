@@ -782,7 +782,7 @@ class FreqtradeBot:
                 logger.info('Trailing stoploss: cancelling current stoploss on exchange (id:{%s}) '
                             'in order to add another one ...', order['id'])
                 current_rate = self.get_sell_rate(trade.pair, True)
-                if trade.stop_loss > current_rate:
+                if trade.stop_loss < current_rate:
                     logger.info(
                         f"Changing trailing stop loss for {trade.pair} from {trade.stop_loss} to {current_rate}")
                     trade.stop_loss = current_rate
