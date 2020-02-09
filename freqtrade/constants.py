@@ -109,7 +109,7 @@ CONF_SCHEMA = {
                 'sell': {
                     'type': 'object',
                     'properties': {
-                }       'after': {'type': 'number', 'minimum': 1},
+                        'after': {'type': 'number', 'minimum': 1},
                         'even_if_sell_signal_valid': {'type': 'boolean'},
                     }
                 }
