@@ -837,14 +837,21 @@ class FreqtradeBot:
                 # a sell signal present
                 config_timeout_eifbsv = self.config.get('unfilled_timeout', {}) \
                     .get('buy').get('even_if_buy_signal_valid')
-                if (config_timeout_eifbsv) or (not buy and sell):
+                if (config_timeout_eifbsv) or (not buy or sell):
                     self.handle_timedout_limit_buy(trade, order)
                     self.wallets.update()
 
             elif ((order['side'] == 'sell' and order['status'] == 'canceled')
                   or (self._check_timed_out('sell', order))):
-                self.handle_timedout_limit_sell(trade, order)
-                self.wallets.update()
+                # proceed to cancel sell order by timeout if configuration
+                # unfilled_timeout.even_if_sell_signal_valid is true (original behaviour) -OR-
+                # cancel sell order only if selling condition is no longer valid OR if there's
+                # a buy signal present
+                config_timeout_eifssv = self.config.get('unfilled_timeout', {}) \
+                    .get('sell').get('even_if_sell_signal_valid')
+                if (config_timeout_eifssv) or (not sell or buy):
+                    self.handle_timedout_limit_sell(trade, order)
+                    self.wallets.update()
 
     def handle_buy_order_full_cancel(self, trade: Trade, reason: str) -> None:
         """Close trade in database and send message"""

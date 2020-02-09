@@ -13,7 +13,8 @@
             "even_if_buy_signal_valid": true
         },
         "sell": {
-            "after": 30
+            "after": 30,
+            "even_if_sell_signal_valid": true
         }
     },
     "bid_strategy": {

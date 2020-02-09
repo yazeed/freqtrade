@@ -216,7 +216,8 @@ def default_conf(testdatadir):
                 "even_if_buy_signal_valid": False
             },
             "sell": {
-                "after": 30
+                "after": 30,
+                "even_if_sell_signal_valid": False
             }
         },
         "bid_strategy": {
