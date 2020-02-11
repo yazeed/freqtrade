@@ -801,8 +801,8 @@ class FreqtradeBot:
             if (datetime.utcnow() - trade.stoploss_last_update).total_seconds() >= update_beat:
                 # cancelling the current stoploss on exchange first
                 order_id = order['id']
-                current_stop_loss = trade.stop_loss
-                initial_stop_loss = trade.initial_stop_loss
+                current_stop_loss = float("{0:.8f}".format(trade.stop_loss))
+                initial_stop_loss = float("{0:.8f}".format(trade.initial_stop_loss))
                 logger.info(f"Trailing stoploss: cancelling current stoploss on exchange (id:{order_id}) "
                             f"for pair {trade.pair} in order to add another one ...")
                 try:
@@ -814,11 +814,11 @@ class FreqtradeBot:
                 current_sell_rate = self.get_sell_rate(trade.pair, True)
                 current_buy_rate = self.get_buy_rate(trade.pair, True)
                 logger.info(f'Initial trailing stop-loss {initial_stop_loss} vs '
+                            f'Trade.stop_loss trailing stop-loss {trade.stop_loss} vs '
                             f'Current trailing stop-loss {current_stop_loss} vs '
-                            f'Target trailing stop-loss {trade.stop_loss} vs '
                             f'Do-able sell rate {current_sell_rate} vs '
                             f'Do-able buy rate {current_buy_rate}')
-                if trade.stop_loss > current_buy_rate:
+                if trade.stop_loss >= current_sell_rate:
                     logger.info(
                         f"Moving target trailing stop loss for {trade.pair} "
                         f"from target {trade.stop_loss} to do-able {current_buy_rate}")
