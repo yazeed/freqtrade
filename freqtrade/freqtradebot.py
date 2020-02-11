@@ -784,21 +784,24 @@ class FreqtradeBot:
                 initial_stop_loss = trade.initial_stop_loss
                 logger.info(f"Trailing stoploss: cancelling current stoploss on exchange (id:{order_id}) "
                             f"for pair {trade.pair} in order to add another one ...")
-                current_rate = self.get_buy_rate(trade.pair, True)
-                logger.info(f'Initial trailing stop-loss {initial_stop_loss} vs '
-                            f'Current trailing stop-loss {current_stop_loss} vs '
-                            f'Target trailing stop-loss {trade.stop_loss} vs '
-                            f'Do-able trailing stop-loss {current_rate}')
-                if trade.stop_loss > current_rate:
-                    logger.info(
-                        f"Moving target trailing stop loss for {trade.pair} "
-                        f"from target {trade.stop_loss} to do-able {current_rate}")
-                    trade.stop_loss = current_rate
                 try:
                     self.exchange.cancel_order(order['id'], trade.pair)
                 except InvalidOrderException:
                     logger.exception(f"Could not cancel stoploss order {order['id']} "
                                      f"for pair {trade.pair}")
+
+                current_sell_rate = self.get_sell_rate(trade.pair, True)
+                current_buy_rate = self.get_buy_rate(trade.pair, True)
+                logger.info(f'Initial trailing stop-loss {initial_stop_loss} vs '
+                            f'Current trailing stop-loss {current_stop_loss} vs '
+                            f'Target trailing stop-loss {trade.stop_loss} vs '
+                            f'Do-able sell rate {current_sell_rate} vs '
+                            f'Do-able buy rate {current_buy_rate}')
+                if trade.stop_loss > current_buy_rate:
+                    logger.info(
+                        f"Moving target trailing stop loss for {trade.pair} "
+                        f"from target {trade.stop_loss} to do-able {current_buy_rate}")
+                    trade.stop_loss = current_buy_rate
 
                 # Create new stoploss order
                 if not self.create_stoploss_order(trade=trade, stop_price=trade.stop_loss,
