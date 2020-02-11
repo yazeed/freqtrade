@@ -779,10 +779,11 @@ class FreqtradeBot:
             update_beat = self.strategy.order_types.get('stoploss_on_exchange_interval', 60)
             if (datetime.utcnow() - trade.stoploss_last_update).total_seconds() >= update_beat:
                 # cancelling the current stoploss on exchange first
-                            'in order to add another one ...', order['id'])
-                logger.info('Trailing stoploss: cancelling current stoploss on exchange (id:{%s}) '
-                current_stop_loss = order['stop_loss']
-                initial_stop_loss = order['initial_stop_loss']
+                order_id = order['id']
+                current_stop_loss = trade.stop_loss
+                initial_stop_loss = trade.initial_stop_loss
+                logger.info(f"Trailing stoploss: cancelling current stoploss on exchange (id:{order_id}) "
+                            f"for pair {trade.pair} in order to add another one ...")
                 current_rate = self.get_buy_rate(trade.pair, True)
                 logger.info(f'Initial trailing stop-loss {initial_stop_loss} vs '
                             f'Current trailing stop-loss {current_stop_loss} vs '
