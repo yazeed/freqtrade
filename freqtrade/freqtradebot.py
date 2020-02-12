@@ -785,8 +785,8 @@ class FreqtradeBot:
                 # cancelling the current stoploss on exchange first
                 order_id = order['id']
                 initial_stop_loss = float("{0:.8f}".format(trade.initial_stop_loss))
-                current_stop_loss = float("{0:.8f}".format(trade.stop_loss))
-                new_stop_loss = current_stop_loss
+                current_stop_loss = trade.stop_loss
+                new_stop_loss = float("{0:.8f}".format(current_stop_loss))
                 logger.info(f"Trailing stoploss: cancelling current stoploss on exchange (id:{order_id}) "
                             f"for pair {trade.pair} in order to add another one ...")
                 try:
