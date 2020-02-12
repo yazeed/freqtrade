@@ -799,7 +799,7 @@ class FreqtradeBot:
                 current_buy_rate = self.get_buy_rate(trade.pair, True)
                 logger.info(f'Initial trailing stop-loss {initial_stop_loss} vs '
                             f'Current trailing stop-loss {current_stop_loss} vs '
-                            f'New trailing stop-loss {trade.stop_loss} vs '
+                            f'New trailing stop-loss {new_stop_loss} vs '
                             f'Do-able sell rate {current_sell_rate} vs '
                             f'Do-able buy rate {current_buy_rate}')
                 if trade.stop_loss >= current_sell_rate:
