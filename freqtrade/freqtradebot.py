@@ -812,13 +812,13 @@ class FreqtradeBot:
                 logger.info(f'Initial trailing stop-loss {initial_stop_loss} vs '
                             f'Current trailing stop-loss {current_stop_loss} vs '
                             f'New trailing stop-loss {new_stop_loss} vs '
-                            f'Do-able sell rate {current_sell_rate} vs '
-                            f'Do-able buy rate {current_buy_rate}')
+                            f'Doable sell rate {current_sell_rate} vs '
+                            f'Doable buy rate {current_buy_rate}')
                 if trade.stop_loss >= current_sell_rate:
+                    new_stop_loss = current_buy_rate
                     logger.info(
                         f"Moving target trailing stop loss for {trade.pair} "
-                        f"from target {trade.stop_loss} to do-able {current_buy_rate}")
-                    new_stop_loss = current_buy_rate
+                        f"from target {current_stop_loss} to do-able {new_stop_loss}")
 
                 # Create new stoploss order
                 if not self.create_stoploss_order(trade=trade, stop_price=new_stop_loss,
