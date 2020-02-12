@@ -706,6 +706,7 @@ class FreqtradeBot:
                                                     stop_price=stop_price,
                                                     order_types=self.strategy.order_types)
             trade.stoploss_order_id = str(stoploss_order['id'])
+            trade.stoploss_last_update = datetime.now()
             return True
         except InvalidOrderException as e:
             trade.stoploss_order_id = None
@@ -809,11 +810,13 @@ class FreqtradeBot:
 
                 current_sell_rate = self.get_sell_rate(trade.pair, True)
                 current_buy_rate = self.get_buy_rate(trade.pair, True)
+                spread = float("{0:.8f}".format(current_sell_rate - current_buy_rate))
                 logger.info(f'Initial trailing stop-loss {initial_stop_loss} vs '
                             f'Current trailing stop-loss {current_stop_loss} vs '
                             f'New trailing stop-loss {new_stop_loss} vs '
                             f'Doable sell rate {current_sell_rate} vs '
-                            f'Doable buy rate {current_buy_rate}')
+                            f'Doable buy rate {current_buy_rate} vs '
+                            f'Spread {spread}')
                 if trade.stop_loss >= current_sell_rate:
                     new_stop_loss = current_buy_rate
                     logger.info(
