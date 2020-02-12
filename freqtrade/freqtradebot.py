@@ -215,6 +215,7 @@ class FreqtradeBot:
                 logger.info("No currency pair in active pair whitelist, "
                             "but checking to sell open trades.")
             else:
+                random.shuffle(whitelist)
                 # Create entity and execute trade for each pair from whitelist
                 for pair in whitelist:
                     try:
@@ -699,6 +700,7 @@ class FreqtradeBot:
         :return: True if the order succeeded, and False in case of problems.
         """
         try:
+            logger.info(f"Creating stoploss ({trade.pair}, amount={trade.amount}, stop_price={stop_price})")
             stoploss_order = self.exchange.stoploss(pair=trade.pair, amount=trade.amount,
                                                     stop_price=stop_price,
                                                     order_types=self.strategy.order_types)
@@ -709,10 +711,11 @@ class FreqtradeBot:
             logger.error(f'Unable to place a stoploss order on exchange. {e}')
             logger.warning('Selling the trade forcefully')
             self.execute_sell(trade, trade.stop_loss, sell_reason=SellType.EMERGENCY_SELL)
-
+            return False
         except DependencyException:
             trade.stoploss_order_id = None
             logger.exception('Unable to place a stoploss order on exchange.')
+            return False
         return False
 
     def handle_stoploss_on_exchange(self, trade: Trade) -> bool:
@@ -813,13 +816,16 @@ class FreqtradeBot:
                     logger.info(
                         f"Moving target trailing stop loss for {trade.pair} "
                         f"from target {trade.stop_loss} to do-able {current_buy_rate}")
-                    trade.stop_loss = current_buy_rate
+                    trade['stop_loss'] = current_buy_rate
+                    logger.info(
+                        f"Moving target trailing stop loss for {trade.pair} "
+                        f"from target {trade.stop_loss} to do-able {current_buy_rate}")
 
                 # Create new stoploss order
                 if not self.create_stoploss_order(trade=trade, stop_price=trade.stop_loss,
                                                   rate=trade.stop_loss):
-                    logger.warning(f"Could not create trailing stoploss order "
-                                   f"for pair {trade.pair}.")
+                    logger.error(f"Could not create trailing stoploss order "
+                                 f"for pair {trade.pair}.")
 
     def _check_and_execute_sell(self, trade: Trade, sell_rate: float,
                                 buy: bool, sell: bool) -> bool:
