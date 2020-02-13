@@ -701,7 +701,6 @@ class FreqtradeBot:
         :return: True if the order succeeded, and False in case of problems.
         """
         try:
-            logger.info(f"Creating stoploss ({trade.pair}, amount={trade.amount}, stop_price={stop_price})")
             stoploss_order = self.exchange.stoploss(pair=trade.pair, amount=trade.amount,
                                                     stop_price=stop_price,
                                                     order_types=self.strategy.order_types)
