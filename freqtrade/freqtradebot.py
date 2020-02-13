@@ -807,8 +807,11 @@ class FreqtradeBot:
                             f'Spread {spread} vs '
                             f'Decimals {decimals} vs '
                             f'Pip {pip}')
-                if trade.stop_loss >= current_sell_rate:
-                    new_stop_loss = current_buy_rate
+                if new_stop_loss >= current_sell_rate:
+                    if spread > 0:
+                        new_stop_loss = current_sell_rate - pip
+                    else:
+                        new_stop_loss = current_buy_rate
                     logger.info(
                         f"Moving target trailing stop loss for {trade.pair} "
                         f"from target {trade.stop_loss} to do-able {new_stop_loss}")
