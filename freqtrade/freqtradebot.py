@@ -829,7 +829,7 @@ class FreqtradeBot:
                             f'Decimals {decimals} vs '
                             f'Pip {pip}')
                 if new_stop_loss >= current_sell_rate:
-                    if spread > 0:
+                    if spread > pip:
                         new_stop_loss = current_sell_rate - pip
                     else:
                         new_stop_loss = current_buy_rate
