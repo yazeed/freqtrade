@@ -403,7 +403,7 @@ class FreqtradeBot:
 
         if buy and not sell:
             if not self.get_free_open_trades():
-                logger.debug("Can't open a new trade: max number of trades is reached.")
+                logger.debug(f"Can't open a new trade for {pair}: max number of trades is reached.")
                 return False
 
             stake_amount = self.get_trade_stake_amount(pair)
@@ -472,6 +472,9 @@ class FreqtradeBot:
                 f"Can't open a new trade for {pair}: stake amount "
                 f"is too small ({stake_amount} < {min_stake_amount})"
             )
+            # Lock pair for one candle to prevent immediate reattempts
+            self.strategy.lock_pair(pair,
+                                    timeframe_to_next_date("1m"))
             return False
 
         amount = stake_amount / buy_limit_requested
