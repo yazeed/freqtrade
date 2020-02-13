@@ -820,7 +820,7 @@ class FreqtradeBot:
                 current_buy_rate = self.get_buy_rate(trade.pair, True)
                 decimals = self.exchange.markets[trade.pair]['precision']['price']
                 pip = 1 / 10 ** decimals
-                spread = round(current_sell_rate - current_buy_rate, int(pip))
+                spread = round(current_sell_rate - current_buy_rate, int(decimals))
                 logger.info(f'Initial trailing stop-loss {initial_stop_loss} vs '
                             f'New trailing stop-loss {new_stop_loss} vs '
                             f'Doable sell rate {current_sell_rate} vs '
