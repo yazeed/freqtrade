@@ -699,7 +699,8 @@ class FreqtradeBot:
             trade.stoploss_order_id = None
             logger.error(f'Unable to place a stoploss order on exchange. {e}')
             logger.warning('Selling the trade forcefully')
-            self.execute_sell(trade, trade.stop_loss, sell_reason=SellType.EMERGENCY_SELL)
+            # trade.stop_loss
+            self.execute_sell(trade, stop_price, sell_reason=SellType.EMERGENCY_SELL)
             return False
         except DependencyException:
             trade.stoploss_order_id = None
