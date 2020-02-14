@@ -45,6 +45,8 @@ class Binance(Exchange):
         this stoploss-limit is binance-specific.
         It may work with a limited number of other exchanges, but this has not been tested yet.
         """
+        logger.info(f"stoploss({pair},{amount},{stop_price})")
+
         # Limit price threshold: As limit price should always be below stop-price
         limit_price_pct = order_types.get('stoploss_on_exchange_limit_ratio', 0.99)
         rate = stop_price * limit_price_pct
@@ -71,22 +73,25 @@ class Binance(Exchange):
 
             rate = self.price_to_precision(pair, rate)
 
+            logger.info('adding stoploss limit order for %s. '
+                        'stop price: %s. limit: %s', pair, stop_price, rate)
             order = self._api.create_order(symbol=pair, type=ordertype, side='sell',
                                            amount=amount, price=stop_price, params=params)
-            logger.info('stoploss limit order added for %s. '
+            logger.info(order)
+            logger.info('added stoploss limit order for %s. '
                         'stop price: %s. limit: %s', pair, stop_price, rate)
             return order
         except ccxt.InsufficientFunds as e:
             raise DependencyException(
                 f'Insufficient funds to create {ordertype} sell order on market {pair}.'
-                f'Tried to sell amount {amount} at rate {rate}. '
+                f'Tried to sell amount {amount} at stop price {stop_price} limit {rate}. '
                 f'Message: {e}') from e
         except ccxt.InvalidOrder as e:
             # Errors:
             # `binance Order would trigger immediately.`
             raise InvalidOrderException(
                 f'Could not create {ordertype} sell order on market {pair}. '
-                f'Tried to sell amount {amount} at rate {rate}. '
+                f'Tried to sell amount {amount} at stop price {stop_price} limit {rate}. '
                 f'Message: {e}') from e
         except (ccxt.NetworkError, ccxt.ExchangeError) as e:
             raise TemporaryError(
