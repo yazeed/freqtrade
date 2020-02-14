@@ -836,9 +836,9 @@ class FreqtradeBot:
                             f'Spread {spread} vs '
                             f'Decimals {decimals} vs '
                             f'Pip {pip}')
-                if new_stop_loss >= current_sell_rate:
+                if new_stop_loss >= current_buy_rate:
                     if spread > pip:
-                        new_stop_loss = current_sell_rate - pip
+                        new_stop_loss = current_buy_rate + pip
                     else:
                         new_stop_loss = current_buy_rate
                     logger.info(
