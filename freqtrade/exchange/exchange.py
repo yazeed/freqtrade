@@ -471,7 +471,9 @@ class Exchange:
 
     def create_order(self, pair: str, ordertype: str, side: str, amount: float,
                      rate: float, params: Dict = {}) -> Dict:
+        logger.info(f"create_order({pair},{ordertype},{side},{amount},{rate},{params})1")
         try:
+            logger.info(f"create_order({pair},{ordertype},{side},{amount},{rate},{params})2")
             # Set the precision for amount and price(rate) as accepted by the exchange
             amount = self.amount_to_precision(pair, amount)
             needs_price = (ordertype != 'market'
@@ -484,12 +486,12 @@ class Exchange:
         except ccxt.InsufficientFunds as e:
             raise DependencyException(
                 f'Insufficient funds to create {ordertype} {side} order on market {pair}.'
-                f'Tried to {side} amount {amount} at rate {rate}.'
+                f'Tried to {side} amount {amount} at rate {rate} {rate_for_order}.'
                 f'Message: {e}') from e
         except ccxt.InvalidOrder as e:
             raise DependencyException(
                 f'Could not create {ordertype} {side} order on market {pair}.'
-                f'Tried to {side} amount {amount} at rate {rate}.'
+                f'Tried to {side} amount {amount} at rate {rate} {rate_for_order}.'
                 f'Message: {e}') from e
         except (ccxt.NetworkError, ccxt.ExchangeError) as e:
             raise TemporaryError(

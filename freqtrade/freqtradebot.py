@@ -456,6 +456,7 @@ class FreqtradeBot:
         :param pair: pair for which we want to create a LIMIT_BUY
         :return: True if a buy order is created, false if it fails.
         """
+        logger.info(f"execute_buy({pair},{stake_amount},{price})")
         time_in_force = self.strategy.order_time_in_force['buy']
 
         if price:
@@ -691,6 +692,7 @@ class FreqtradeBot:
         Force-sells the pair (using EmergencySell reason) in case of Problems creating the order.
         :return: True if the order succeeded, and False in case of problems.
         """
+        logger.info(f"create_stoploss_order({trade},{stop_price},{rate})")
         try:
             stoploss_order = self.exchange.stoploss(pair=trade.pair, amount=trade.amount,
                                                     stop_price=stop_price,
@@ -702,8 +704,7 @@ class FreqtradeBot:
             trade.stoploss_order_id = None
             logger.error(f'Unable to place a stoploss order on exchange. {e}')
             logger.warning('Selling the trade forcefully')
-            # trade.stop_loss
-            self.execute_sell(trade, stop_price, sell_reason=SellType.EMERGENCY_SELL)
+            self.execute_sell(trade, trade.stop_loss, sell_reason=SellType.EMERGENCY_SELL)
             return False
         except DependencyException:
             trade.stoploss_order_id = None
@@ -753,13 +754,14 @@ class FreqtradeBot:
             stop_price = trade.open_rate * (1 + stoploss)
 
             if self.create_stoploss_order(trade=trade, stop_price=stop_price, rate=stop_price):
-                trade.stoploss_last_update = datetime.now()
+                logger.info("handle_stoploss_on_exchange path 1")
                 return False
 
         # If stoploss order is canceled for some reason we add it
         if stoploss_order and stoploss_order['status'] == 'canceled':
             if self.create_stoploss_order(trade=trade, stop_price=trade.stop_loss,
                                           rate=trade.stop_loss):
+                logger.info("handle_stoploss_on_exchange path 2")
                 return False
             else:
                 trade.stoploss_order_id = None
@@ -783,6 +785,8 @@ class FreqtradeBot:
         :return: None
         """
         if self.exchange.stoploss_adjust(trade.stop_loss, order):
+            logger.info("handle_stoploss_on_exchange path 3")
+            logger.info(f"handle_trailing_stoploss_on_exchange({trade},{order})")
             # we check if the update is neccesary
             update_beat = self.strategy.order_types.get('stoploss_on_exchange_interval', 60)
             if (datetime.utcnow() - trade.stoploss_last_update).total_seconds() >= update_beat:
@@ -790,8 +794,9 @@ class FreqtradeBot:
                 order_id = order['id']
                 initial_stop_loss = trade.initial_stop_loss
                 new_stop_loss = trade.stop_loss
-                logger.info(f"Trailing stoploss: cancelling current stoploss on exchange (id:{order_id}) "
-                            f"for pair {trade.pair} in order to add another one ...")
+                logger.info(f"Trailing stoploss: cancelling current stoploss on exchange "
+                            f"(id:{order_id}) for pair {trade.pair} in order "
+                            f"to add another one ...")
                 try:
                     self.exchange.cancel_order(order['id'], trade.pair)
                 except InvalidOrderException:
@@ -816,8 +821,8 @@ class FreqtradeBot:
                     else:
                         new_stop_loss = current_buy_rate
                     logger.info(
-                        f"Moving target trailing stop loss for {trade.pair} "
-                        f"from target {trade.stop_loss} to do-able {new_stop_loss}")
+                        f"Moving target trailing stoploss target for {trade.pair} "
+                        f"from {trade.stop_loss} to do-able {new_stop_loss}")
 
                 # Create new stoploss order
                 if not self.create_stoploss_order(trade=trade, stop_price=new_stop_loss,
