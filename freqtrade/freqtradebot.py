@@ -814,6 +814,7 @@ class FreqtradeBot:
                 # cancelling the current stoploss on exchange first
                 order_id = order['id']
                 initial_stop_loss = trade.initial_stop_loss
+                current_stop_loss = trade.stop_loss
                 new_stop_loss = trade.stop_loss
                 logger.info(f"Trailing stoploss: cancelling current stoploss on exchange "
                             f"(id:{order_id}) for pair {trade.pair} in order "
@@ -829,13 +830,6 @@ class FreqtradeBot:
                 decimals = self.exchange.markets[trade.pair]['precision']['price']
                 pip = 1 / 10 ** decimals
                 spread = round(current_sell_rate - current_buy_rate, int(decimals))
-                logger.info(f'Initial trailing stop-loss {initial_stop_loss} vs '
-                            f'New trailing stop-loss {new_stop_loss} vs '
-                            f'Doable sell rate {current_sell_rate} vs '
-                            f'Doable buy rate {current_buy_rate} vs '
-                            f'Spread {spread} vs '
-                            f'Decimals {decimals} vs '
-                            f'Pip {pip}')
                 if new_stop_loss >= current_buy_rate:
                     if spread > pip:
                         new_stop_loss = current_buy_rate + pip
@@ -844,6 +838,15 @@ class FreqtradeBot:
                     logger.info(
                         f"Moving target trailing stoploss target for {trade.pair} "
                         f"from {trade.stop_loss} to do-able {new_stop_loss}")
+
+                logger.info(f'Initial trailing stop-loss {initial_stop_loss} vs '
+                            f'New trailing stop-loss {current_stop_loss} vs '
+                            f'Modified trailing stop-loss {new_stop_loss} vs '
+                            f'Doable sell rate {current_sell_rate} vs '
+                            f'Doable buy rate {current_buy_rate} vs '
+                            f'Spread {spread} vs '
+                            f'Decimals {decimals} vs '
+                            f'Pip {pip}')
 
                 # Create new stoploss order
                 if not self.create_stoploss_order(trade=trade, stop_price=new_stop_loss,
