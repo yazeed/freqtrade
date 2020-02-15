@@ -471,7 +471,7 @@ class Exchange:
 
     def create_order(self, pair: str, ordertype: str, side: str, amount: float,
                      rate: float, params: Dict = {}) -> Dict:
-        logger.info(f"create_order({pair},{ordertype},{side},{amount},{rate},{params})1")
+        logger.info(f"create_order({pair},{ordertype},{side},{amount},{rate},{params})")
         try:
             # Set the precision for amount and price(rate) as accepted by the exchange
             amount = self.amount_to_precision(pair, amount)
