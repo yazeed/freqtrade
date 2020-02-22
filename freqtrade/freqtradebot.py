@@ -823,7 +823,7 @@ class FreqtradeBot:
                 spread = round(current_sell_rate - current_buy_rate, int(decimals))
                 if new_stop_loss >= current_buy_rate:
                     if spread > pip:
-                        new_stop_loss = current_buy_rate + pip
+                        new_stop_loss = current_sell_rate - pip
                     else:
                         new_stop_loss = current_buy_rate
                     logger.info(
