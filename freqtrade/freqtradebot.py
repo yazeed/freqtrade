@@ -8,10 +8,10 @@ from datetime import datetime
 from math import isclose
 from threading import Lock
 from typing import Any, Dict, List, Optional, Tuple
-import random
 
 import arrow
 from cachetools import TTLCache
+import random
 from requests.exceptions import RequestException
 
 from freqtrade import __version__, constants, persistence
