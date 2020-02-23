@@ -181,6 +181,10 @@ class FreqtradeBot:
         if trades:
             # Extend active-pair whitelist with pairs from open trades
             # It ensures that tickers are downloaded for open trades
+            for trade in trades:
+                if trade.pair not in _whitelist:
+                    logger.info(f"Adding {trade.pair} back to whitelist,"
+                                f" because there's an open trade.")
             _whitelist.extend([trade.pair for trade in trades if trade.pair not in _whitelist])
         return _whitelist
 
