@@ -3,6 +3,7 @@ from copy import deepcopy
 from typing import Dict, List
 
 from freqtrade.pairlist.IPairList import IPairList
+from freqtrade.persistence import Trade
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +33,6 @@ class SpreadFilter(IPairList):
                 f"{self._max_spread_ratio * 100}%.")
 
     def filter_pairlist(self, pairlist: List[str], tickers: Dict) -> List[str]:
-
         """
         Filters and sorts pairlist and returns the whitelist again.
         Called on each bot iteration - please use internal caching if necessary
@@ -49,6 +49,9 @@ class SpreadFilter(IPairList):
             if 'bid' in ticker and 'ask' in ticker:
                 spread = 1 - ticker['bid'] / ticker['ask']
                 if not ticker or spread > self._max_spread_ratio:
+                    for trade in Trade.get_open_trades():
+                        if trade.pair == ticker['symbol']:
+                            continue
                     logger.info(f"Removed {ticker['symbol']} from whitelist, "
                                 f"because spread {spread * 100:.3f}% >"
                                 f"{self._max_spread_ratio * 100}%")
