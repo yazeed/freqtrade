@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any, Dict, List, NamedTuple, Optional
 
 import arrow
+import random
 from pandas import DataFrame
 
 from freqtrade.configuration import (TimeRange, remove_credentials,
