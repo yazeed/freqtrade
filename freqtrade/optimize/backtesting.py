@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any, Dict, List, NamedTuple, Optional
 
 import arrow
+import random
 from pandas import DataFrame
 
 from freqtrade.configuration import (TimeRange, remove_credentials,
@@ -112,9 +113,11 @@ class Backtesting:
         timerange = TimeRange.parse_timerange(None if self.config.get(
             'timerange') is None else str(self.config.get('timerange')))
 
+        whitelist = self.config['exchange']['pair_whitelist']
+        shuffled_whitelist = random.sample(whitelist, len(whitelist))
         data = history.load_data(
             datadir=self.config['datadir'],
-            pairs=self.config['exchange']['pair_whitelist'],
+            pairs=shuffled_whitelist,
             timeframe=self.timeframe,
             timerange=timerange,
             startup_candles=self.required_startup,
