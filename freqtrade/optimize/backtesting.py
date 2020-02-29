@@ -10,7 +10,6 @@ from pathlib import Path
 from typing import Any, Dict, List, NamedTuple, Optional
 
 import arrow
-import random
 from pandas import DataFrame
 
 from freqtrade.configuration import (TimeRange, remove_credentials,
@@ -177,6 +176,7 @@ class Backtesting:
             # Convert from Pandas to list for performance reasons
             # (Looping Pandas is slow.)
             ticker[pair] = [x for x in ticker_data.itertuples()]
+
         return ticker
 
     def _get_close_rate(self, sell_row, trade: Trade, sell: SellCheckTuple,
@@ -311,7 +311,6 @@ class Backtesting:
 
         # Dict of ticker-lists for performance (looping lists is a lot faster than dataframes)
         ticker: Dict = self._get_ticker_list(processed)
-        random.shuffle(ticker)
 
         lock_pair_until: Dict = {}
         # Indexes per pair, so some pairs are allowed to have a missing start.
