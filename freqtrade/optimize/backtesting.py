@@ -314,6 +314,7 @@ class Backtesting:
 
         # Dict of ticker-lists for performance (looping lists is a lot faster than dataframes)
         ticker: Dict = self._get_ticker_list(processed)
+        random.shuffle(ticker)
 
         lock_pair_until: Dict = {}
         # Indexes per pair, so some pairs are allowed to have a missing start.
