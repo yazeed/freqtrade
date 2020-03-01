@@ -116,7 +116,7 @@ class Backtesting:
         shuffled_whitelist = random.sample(whitelist, len(whitelist))
         data = history.load_data(
             datadir=self.config['datadir'],
-            pairs=shuffled_whitelist,
+            pairs=whitelist,
             timeframe=self.timeframe,
             timerange=timerange,
             startup_candles=self.required_startup,
