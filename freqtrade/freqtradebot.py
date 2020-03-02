@@ -179,7 +179,7 @@ class FreqtradeBot:
                 if trade.pair not in _whitelist:
                     logger.info(f"Adding {trade.pair} back to whitelist,"
                                 f" because there's an open trade.")
-            _whitelist.extend([trade.pair for trade in trades if trade.pair not in _whitelist])
+                    _whitelist.extend([trade.pair])
         return _whitelist
 
     def _create_pair_whitelist(self, pairs: List[str]) -> List[Tuple[str, str]]:
