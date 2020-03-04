@@ -221,6 +221,9 @@ class FreqtradeBot:
                             "but checking to sell open trades.")
             else:
                 random.shuffle(whitelist)
+                whitelist_count = len(whitelist)
+                logger.info(
+                    f"{whitelist_count} pairs to check for buying opportunities in whitelist.")
                 # Create entity and execute trade for each pair from whitelist
                 for pair in whitelist:
                     try:
