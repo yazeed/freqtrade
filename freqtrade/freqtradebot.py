@@ -652,7 +652,7 @@ class FreqtradeBot:
             rate = order_book['asks'][0][0]
 
         else:
-            rate = self.exchange.fetch_ticker(pair, refresh)['ask']
+            rate = self.exchange.fetch_ticker(pair)['ask']
         self._sell_rate_cache[pair] = rate
         return rate
 
