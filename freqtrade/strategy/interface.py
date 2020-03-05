@@ -241,8 +241,7 @@ class IStrategy(ABC):
 
         return dataframe
 
-    def get_signal(self, pair: str, interval: str,
-                   dataframe: DataFrame) -> Tuple[bool, bool]:
+    def get_signal(self, pair: str, interval: str, dataframe: DataFrame) -> Tuple[bool, bool]:
         """
         Calculates current signal based several technical analysis indicators
         :param pair: pair in format ANT/BTC
@@ -252,7 +251,7 @@ class IStrategy(ABC):
         """
         if not isinstance(dataframe, DataFrame) or dataframe.empty:
             logger.warning('Empty ticker history for pair %s', pair)
-            return False, False
+            return False, False, float('nan')
 
         try:
             dataframe = self._analyze_ticker_internal(dataframe, {'pair': pair})
@@ -262,18 +261,18 @@ class IStrategy(ABC):
                 pair,
                 str(error)
             )
-            return False, False
+            return False, False, float('nan')
         except Exception as error:
             logger.exception(
                 'Unexpected error when analyzing ticker for pair %s: %s',
                 pair,
                 str(error)
             )
-            return False, False
+            return False, False, float('nan')
 
         if dataframe.empty:
             logger.warning('Empty dataframe for pair %s', pair)
-            return False, False
+            return False, False, float('nan')
 
         latest = dataframe.iloc[-1]
 
@@ -287,9 +286,14 @@ class IStrategy(ABC):
                 pair,
                 (arrow.utcnow() - signal_date).seconds // 60
             )
-            return False, False
+            return False, False, float('nan')
 
-        (buy, sell) = latest[SignalType.BUY.value] == 1, latest[SignalType.SELL.value] == 1
+        if 'variant' in dataframe.columns:
+            (buy, sell,
+             variant) = latest[SignalType.BUY.value] == 1, latest[SignalType.SELL.value] == 1, latest["variant"]
+        else:
+            (buy, sell,
+             variant) = latest[SignalType.BUY.value] == 1, latest[SignalType.SELL.value] == 1, 0
         logger.debug(
             'trigger: %s (pair=%s) buy=%s sell=%s',
             latest['date'],
@@ -297,7 +301,7 @@ class IStrategy(ABC):
             str(buy),
             str(sell)
         )
-        return buy, sell
+        return buy, sell, variant
 
     def should_sell(self, trade: Trade, rate: float, date: datetime, buy: bool,
                     sell: bool, low: float = None, high: float = None,
