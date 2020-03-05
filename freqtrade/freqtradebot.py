@@ -254,7 +254,7 @@ class FreqtradeBot:
         config_bid_strategy = self.config.get('bid_strategy', {})
         if 'use_order_book' in config_bid_strategy and\
                 config_bid_strategy.get('use_order_book', False):
-            logger.info('Getting price from order book')
+            logger.info('Using order book to get buy rate')
             order_book_top = config_bid_strategy.get('order_book_top', 1)
             order_book = self.exchange.get_order_book(pair, order_book_top)
             logger.debug('order_book %s', order_book)
@@ -404,7 +404,7 @@ class FreqtradeBot:
             return False
 
         # running get_signal on historical data fetched
-        (buy, sell) = self.strategy.get_signal(
+        (buy, sell, variant) = self.strategy.get_signal(
             pair, self.strategy.ticker_interval,
             self.dataprovider.ohlcv(pair, self.strategy.ticker_interval))
 
@@ -426,12 +426,12 @@ class FreqtradeBot:
                     (bid_check_dom.get('bids_to_ask_delta', 0) > 0)):
                 if self._check_depth_of_market_buy(pair, bid_check_dom):
                     logger.info(f'Executing Buy for {pair}.')
-                    return self.execute_buy(pair, stake_amount)
+                    return self.execute_buy(pair, stake_amount, variant)
                 else:
                     return False
 
             logger.info(f'Executing Buy for {pair}')
-            return self.execute_buy(pair, stake_amount)
+            return self.execute_buy(pair, stake_amount, variant)
         else:
             return False
 
@@ -459,7 +459,7 @@ class FreqtradeBot:
             logger.info(f"Bids to asks delta for {pair} does not satisfy condition.")
             return False
 
-    def execute_buy(self, pair: str, stake_amount: float, price: Optional[float] = None) -> bool:
+    def execute_buy(self, pair: str, stake_amount: float, variant: int = 0, price: Optional[float] = None) -> bool:
         """
         Executes a limit buy for the given pair
         :param pair: pair for which we want to create a LIMIT_BUY
@@ -538,9 +538,10 @@ class FreqtradeBot:
             open_date=datetime.utcnow(),
             exchange=self.exchange.id,
             open_order_id=order_id,
-            strategy=self.strategy.get_strategy_name(),
+            strategy=self.strategy.get_strategy_name() + "v" + str(variant),
             ticker_interval=timeframe_to_minutes(self.config['ticker_interval'])
         )
+        logger.info(f"Trade on {self.strategy.get_strategy_name()}{variant}")
 
         # Update fees if order is closed
         if order_status == 'closed':
@@ -669,13 +670,13 @@ class FreqtradeBot:
 
         logger.debug('Handling %s ...', trade)
 
-        (buy, sell) = (False, False)
+        (buy, sell, variant) = (False, False, 0)
 
         config_ask_strategy = self.config.get('ask_strategy', {})
 
         if (config_ask_strategy.get('use_sell_signal', True) or
                 config_ask_strategy.get('ignore_roi_if_buy_signal')):
-            (buy, sell) = self.strategy.get_signal(
+            (buy, sell, variant) = self.strategy.get_signal(
                 trade.pair, self.strategy.ticker_interval,
                 self.dataprovider.ohlcv(trade.pair, self.strategy.ticker_interval))
 
