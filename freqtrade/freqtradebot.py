@@ -404,21 +404,21 @@ class FreqtradeBot:
             logger.info(f"Pair {pair} is currently locked.")
             return False
 
+        if not self.get_free_open_trades():
+            logger.debug(f"Can't open a new trade for {pair}: max number of trades is reached.")
+            return False
+
+        stake_amount = self.get_trade_stake_amount(pair)
+        if not stake_amount:
+            logger.debug(f"Stake amount is 0, ignoring possible trade for {pair}.")
+            return False
+
         # running get_signal on historical data fetched
         (buy, sell, variant) = self.strategy.get_signal(
             pair, self.strategy.ticker_interval,
             self.dataprovider.ohlcv(pair, self.strategy.ticker_interval))
 
         if buy and not sell:
-            if not self.get_free_open_trades():
-                logger.debug(f"Can't open a new trade for {pair}: max number of trades is reached.")
-                return False
-
-            stake_amount = self.get_trade_stake_amount(pair)
-            if not stake_amount:
-                logger.debug(f"Stake amount is 0, ignoring possible trade for {pair}.")
-                return False
-
             logger.info(f"Buy signal found: about create a new trade with stake_amount: "
                         f"{stake_amount} ...")
 
@@ -539,10 +539,10 @@ class FreqtradeBot:
             open_date=datetime.utcnow(),
             exchange=self.exchange.id,
             open_order_id=order_id,
-            strategy=self.strategy.get_strategy_name() + "v" + str(variant),
+            strategy=self.strategy.get_strategy_name() + "v" + str(int(variant)),
             ticker_interval=timeframe_to_minutes(self.config['ticker_interval'])
         )
-        logger.info(f"Trade on {self.strategy.get_strategy_name()}{variant}")
+        logger.info(f"Trade for {pair} on {self.strategy.get_strategy_name()}{int(variant)}")
 
         # Update fees if order is closed
         if order_status == 'closed':
