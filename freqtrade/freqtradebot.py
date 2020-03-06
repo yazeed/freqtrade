@@ -816,6 +816,7 @@ class FreqtradeBot:
         :param order: Current on exchange stoploss order
         :return: None
         """
+        current_stop_loss = trade.stop_loss
         if self.exchange.stoploss_adjust(trade.stop_loss, order):
             logger.info("handle_stoploss_on_exchange path 3")
             logger.info(f"handle_trailing_stoploss_on_exchange({trade},{order})")
@@ -825,7 +826,6 @@ class FreqtradeBot:
                 # cancelling the current stoploss on exchange first
                 order_id = order['id']
                 initial_stop_loss = trade.initial_stop_loss
-                current_stop_loss = trade.stop_loss
                 new_stop_loss = trade.stop_loss
                 logger.info(f"Trailing stoploss: cancelling current stoploss on exchange "
                             f"(id:{order_id}) for pair {trade.pair} in order "
