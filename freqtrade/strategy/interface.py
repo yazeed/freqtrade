@@ -294,13 +294,14 @@ class IStrategy(ABC):
         else:
             (buy, sell,
              variant) = latest[SignalType.BUY.value] == 1, latest[SignalType.SELL.value] == 1, 0
-        logger.debug(
-            'trigger: %s (pair=%s) buy=%s sell=%s',
-            latest['date'],
-            pair,
-            str(buy),
-            str(sell)
-        )
+        if buy or sell:
+            logger.info(
+                'trigger: %s (pair=%s) buy=%s sell=%s',
+                latest['date'],
+                pair,
+                str(buy),
+                str(sell)
+            )
         return buy, sell, variant
 
     def should_sell(self, trade: Trade, rate: float, date: datetime, buy: bool,

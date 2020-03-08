@@ -45,7 +45,7 @@ with warnings.catch_warnings():
 logger = logging.getLogger(__name__)
 
 
-INITIAL_POINTS = 60
+INITIAL_POINTS = 120
 
 # Keep no more than 2*SKOPT_MODELS_MAX_NUM models
 # in the skopt models list
