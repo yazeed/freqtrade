@@ -5,7 +5,7 @@ import copy
 import logging
 import traceback
 from datetime import datetime
-from math import isclose
+from math import isclose, isnan
 from threading import Lock
 from typing import Any, Dict, List, Optional, Tuple
 
