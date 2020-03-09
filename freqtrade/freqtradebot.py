@@ -844,7 +844,7 @@ class FreqtradeBot:
                 pip = 1 / 10 ** decimals
                 spread = round(current_sell_rate - current_buy_rate, int(decimals))
                 last_rate = self.exchange.fetch_ticker(trade.pair)['last']
-                if new_stop_loss >= current_buy_rate and last_rate > current_buy_rate:
+                if new_stop_loss >= current_buy_rate and last_rate >= current_buy_rate:
                     if spread > pip:
                         new_stop_loss = current_buy_rate + pip
                     else:
