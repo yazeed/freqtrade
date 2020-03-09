@@ -854,8 +854,8 @@ class FreqtradeBot:
                         f"from {trade.stop_loss} to do-able {new_stop_loss}")
 
                 logger.info(f'Initial trailing stop-loss {initial_stop_loss} vs '
-                            f'New trailing stop-loss {current_stop_loss} vs '
-                            f'Modified trailing stop-loss {new_stop_loss} vs '
+                            f'Current trailing stop-loss {current_stop_loss} vs '
+                            f'New trailing stop-loss {new_stop_loss} vs '
                             f'Do-able sell rate {current_sell_rate} vs '
                             f'Do-able buy rate {current_buy_rate} vs '
                             f'Current price {last_rate} vs '
