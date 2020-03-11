@@ -275,18 +275,16 @@ class IStrategy(ABC):
             return False, False, float('nan')
 
         latest = dataframe.iloc[-1]
-
-        # Check if dataframe has new candle - act only within 30 mins of 4h candle (1/8th)
         signal_date = arrow.get(latest['date'])
         interval_minutes = timeframe_to_minutes(interval)
+
+        # Check if dataframe has new candle - act only within 30 mins of 4h candle (1/8th)
         if (arrow.utcnow() - signal_date).total_seconds() // 60 >= interval_minutes / 8:
             logger.warning('Old candle for pair %s. Last candle is %s minutes old',
                            pair, int((arrow.utcnow() - signal_date).total_seconds() // 60))
             return False, False
 
         # Check if dataframe is out of date
-        signal_date = arrow.get(latest['date'])
-        interval_minutes = timeframe_to_minutes(interval)
         offset = self.config.get('exchange', {}).get('outdated_offset', 5)
         if signal_date < (arrow.utcnow().shift(minutes=-(interval_minutes * 2 + offset))):
             logger.warning(
