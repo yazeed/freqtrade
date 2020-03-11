@@ -282,7 +282,7 @@ class IStrategy(ABC):
         if (arrow.utcnow() - signal_date).total_seconds() // 60 >= interval_minutes / 8:
             logger.warning('Old candle for pair %s. Last candle is %s minutes old',
                            pair, int((arrow.utcnow() - signal_date).total_seconds() // 60))
-            return False, False
+            return False, False, float('nan')
 
         # Check if dataframe is out of date
         offset = self.config.get('exchange', {}).get('outdated_offset', 5)
