@@ -276,7 +276,7 @@ class IStrategy(ABC):
 
         latest = dataframe.iloc[-1]
 
-        # Check if dataframe has new candle - act only within 30 mins
+        # Check if dataframe has new candle - act only within 30 mins of 4h candle (1/8th)
         signal_date = arrow.get(latest['date'])
         interval_minutes = timeframe_to_minutes(interval)
         if (arrow.utcnow() - signal_date).total_seconds() // 60 >= interval_minutes / 8:
