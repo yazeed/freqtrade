@@ -9,7 +9,7 @@ import logging
 import random
 import sys
 import warnings
-from math import ceil
+from math import ceil, log, factorial
 from collections import OrderedDict
 from operator import itemgetter
 from pathlib import Path
@@ -594,10 +594,41 @@ class Hyperopt:
         logger.info(f'Number of parallel jobs set as: {config_jobs}')
 
         self.dimensions: List[Dimension] = self.hyperopt_space()
+        n_dimensions = len(self.dimensions)
+        n_parameters = 0
+        for d in self.dimensions:
+            if type(d).__name__ == 'Integer':
+                n_parameters += d.high-d.low
+            elif type(d).__name__ == 'Real':
+                n_parameters += 10
+            else:
+                n_parameters += len(d.bounds)
+        search_space_size = (
+            factorial(n_parameters) /
+            (factorial(n_parameters-n_dimensions)*factorial(n_dimensions))
+        )
+        logger.info(f'Search space size: {search_space_size}')
+        if search_space_size < config_jobs:
+            n_initial_points = 1
+            config_jobs = int(search_space_size+1)
+        else:
+            log_sss = int(log(search_space_size))
+            log_jobs = int(log(config_jobs, 1.5))
+            if log_jobs < 0:
+                log_jobs = 2
+            jobs_ip = log_jobs * log_sss
+            if jobs_ip > search_space_size:
+                n_initial_points = log_sss
+            else:
+                n_initial_points = jobs_ip
+        logger.info(f'Search initial points: {n_initial_points}')
         self.opt = self.get_optimizer(self.dimensions, config_jobs)
 
         if self.print_colorized:
             colorama_init(autoreset=True)
+
+        global runs
+        runs = 0
 
         try:
             with Parallel(n_jobs=config_jobs) as parallel:
@@ -616,27 +647,34 @@ class Hyperopt:
                     self.fix_optimizer_models_list()
 
                     for j, val in enumerate(f_val):
-                        # Use human-friendly indexes here (starting from 1)
-                        current = i * jobs + j + 1
-                        val['current_epoch'] = current
-                        val['is_initial_point'] = current <= INITIAL_POINTS
-                        logger.debug(f"Optimizer epoch evaluated: {val}")
+                        if val['loss'] == 100000:
+                            continue
+                        else:
+                            runs = runs + 1
+                            # Use human-friendly indexes here (starting from 1)
+                            current = i * jobs + j + 1
+                            val['current_epoch'] = current
+                            val['is_initial_point'] = runs <= n_initial_points
+                            logger.info(
+                                f"Optimizer epoch evaluated: {runs} {val}")
 
-                        is_best = self.is_best_loss(val, self.current_best_loss)
-                        # This value is assigned here and not in the optimization method
-                        # to keep proper order in the list of results. That's because
-                        # evaluations can take different time. Here they are aligned in the
-                        # order they will be shown to the user.
-                        val['is_best'] = is_best
+                            is_best = self.is_best_loss(val, self.current_best_loss)
+                            # This value is assigned here and not in the optimization method
+                            # to keep proper order in the list of results. That's because
+                            # evaluations can take different time. Here they are aligned in the
+                            # order they will be shown to the user.
+                            val['is_best'] = is_best
 
-                        self.print_results(val)
+                            self.print_results(val)
 
-                        if is_best:
-                            self.current_best_loss = val['loss']
-                        self.trials.append(val)
-                        # Save results after each best epoch and every 100 epochs
-                        if is_best or current % 100 == 0:
-                            self.save_trials()
+                            if is_best:
+                                self.current_best_loss = val['loss']
+
+                            self.trials.append(val)
+
+                            # Save results after each best epoch and every 100 epochs
+                            if is_best or current % 100 == 0:
+                                self.save_trials()
         except KeyboardInterrupt:
             print('User interrupted..')
 
