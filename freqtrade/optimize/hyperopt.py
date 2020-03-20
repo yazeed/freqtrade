@@ -654,14 +654,14 @@ class Hyperopt:
                         logger.debug(
                             f"Optimizer epoch evaluated: {current} {val}")
 
-                            is_best = self.is_best_loss(val, self.current_best_loss)
-                            # This value is assigned here and not in the optimization method
-                            # to keep proper order in the list of results. That's because
-                            # evaluations can take different time. Here they are aligned in the
-                            # order they will be shown to the user.
-                            val['is_best'] = is_best
+                        is_best = self.is_best_loss(val, self.current_best_loss)
+                        # This value is assigned here and not in the optimization method
+                        # to keep proper order in the list of results. That's because
+                        # evaluations can take different time. Here they are aligned in the
+                        # order they will be shown to the user.
+                        val['is_best'] = is_best
 
-                            self.print_results(val)
+                        self.print_results(val)
 
                         if is_best:
                             self.current_best_loss = val['loss']
