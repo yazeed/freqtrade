@@ -647,16 +647,12 @@ class Hyperopt:
                     self.fix_optimizer_models_list()
 
                     for j, val in enumerate(f_val):
-                        if val['loss'] == 100000:
-                            continue
-                        else:
-                            runs = runs + 1
-                            # Use human-friendly indexes here (starting from 1)
-                            current = i * jobs + j + 1
-                            val['current_epoch'] = current
-                            val['is_initial_point'] = runs <= n_initial_points
-                            logger.info(
-                                f"Optimizer epoch evaluated: {runs} {val}")
+                        # Use human-friendly indexes here (starting from 1)
+                        current = i * jobs + j + 1
+                        val['current_epoch'] = current
+                        val['is_initial_point'] = current <= n_initial_points
+                        logger.debug(
+                            f"Optimizer epoch evaluated: {current} {val}")
 
                             is_best = self.is_best_loss(val, self.current_best_loss)
                             # This value is assigned here and not in the optimization method
@@ -667,14 +663,16 @@ class Hyperopt:
 
                             self.print_results(val)
 
-                            if is_best:
-                                self.current_best_loss = val['loss']
+                        if is_best:
+                            self.current_best_loss = val['loss']
+                            logger.info(
+                                f"Best eval: {val}")
 
-                            self.trials.append(val)
+                        self.trials.append(val)
 
-                            # Save results after each best epoch and every 100 epochs
-                            if is_best or current % 100 == 0:
-                                self.save_trials()
+                        # Save results after each best epoch and every 100 epochs
+                        if is_best or current % 100 == 0:
+                            self.save_trials()
         except KeyboardInterrupt:
             print('User interrupted..')
 
