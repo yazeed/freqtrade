@@ -951,11 +951,12 @@ class FreqtradeBot:
             reason = "cancelled on exchange"
             logger.info('Buy order %s for %s.', reason, trade)
 
-        if corder.get('remaining', order['remaining']) == order['amount']:
-            # if trade is not partially completed, just delete the trade
-            Trade.session.delete(trade)
-            Trade.session.flush()
-            return True
+        if not isinstance(corder, str):
+            if corder.get('remaining', order['remaining']) == order['amount']:
+                # if trade is not partially completed, just delete the trade
+                Trade.session.delete(trade)
+                Trade.session.flush()
+                return True
 
         # if trade is partially complete, edit the stake details for the trade
         # and close the order

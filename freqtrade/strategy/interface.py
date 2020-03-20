@@ -418,7 +418,7 @@ class IStrategy(ABC):
             # If initial stoploss is not the same as current one then it is trailing.
             if trade.initial_stop_loss != trade.stop_loss:
                 sell_type = SellType.TRAILING_STOP_LOSS
-                logger.debug(
+                logger.info(
                     f"{trade.pair} - HIT STOP: current price at {current_rate:.6f}, "
                     f"stoploss is {trade.stop_loss:.6f}, "
                     f"initial stoploss was at {trade.initial_stop_loss:.6f}, "
