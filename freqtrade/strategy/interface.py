@@ -294,12 +294,6 @@ class IStrategy(ABC):
                            pair, int((arrow.utcnow() - signal_date).total_seconds() // 60))
             return False, False, float('nan')
 
-        # Check if dataframe has new candle - act only within 30 mins of 4h candle (1/8th)
-        if (arrow.utcnow() - signal_date).total_seconds() // 60 >= interval_minutes / 8:
-            logger.warning('Candle not fresh for pair %s. Last candle is %s minutes old',
-                           pair, int((arrow.utcnow() - signal_date).total_seconds() // 60))
-            return False, False, float('nan')
-
         if 'variant' in dataframe.columns:
             (buy, sell,
              variant) = latest[SignalType.BUY.value] == 1, latest[SignalType.SELL.value] == 1, latest["variant"]
