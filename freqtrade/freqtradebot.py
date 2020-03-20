@@ -944,6 +944,9 @@ class FreqtradeBot:
         if order['status'] != 'canceled':
             reason = "cancelled due to timeout"
             corder = self.exchange.cancel_order(trade.open_order_id, trade.pair)
+            # Some exchanges don't return a dict here.
+            if not isinstance(corder, dict):
+                corder = {}
             logger.info('Buy order %s for %s.', reason, trade)
         else:
             # Order was cancelled already, so we can reuse the existing dict
@@ -951,12 +954,11 @@ class FreqtradeBot:
             reason = "cancelled on exchange"
             logger.info('Buy order %s for %s.', reason, trade)
 
-        if not isinstance(corder, str):
-            if corder.get('remaining', order['remaining']) == order['amount']:
-                # if trade is not partially completed, just delete the trade
-                Trade.session.delete(trade)
-                Trade.session.flush()
-                return True
+        if corder.get('remaining', order['remaining']) == order['amount']:
+            # if trade is not partially completed, just delete the trade
+            Trade.session.delete(trade)
+            Trade.session.flush()
+            return True
 
         # if trade is partially complete, edit the stake details for the trade
         # and close the order
