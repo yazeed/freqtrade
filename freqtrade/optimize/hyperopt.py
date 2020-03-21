@@ -666,7 +666,7 @@ class Hyperopt:
                         if is_best:
                             self.current_best_loss = val['loss']
                             logger.info(
-                                f"Best eval: {val}")
+                                f"Best eval: {val.get('param_details', {})}")
 
                         self.trials.append(val)
 

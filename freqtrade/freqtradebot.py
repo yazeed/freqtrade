@@ -874,6 +874,7 @@ class FreqtradeBot:
         """
         Check and execute sell
         """
+        logger.info(f"_check_and_execute_sell({trade.pair},{sell_rate},{buy},{sell})")
         should_sell = self.strategy.should_sell(
             trade, sell_rate, datetime.utcnow(), buy, sell,
             force_stoploss=self.edge.stoploss(trade.pair) if self.edge else 0
@@ -1047,6 +1048,7 @@ class FreqtradeBot:
         :param sellreason: Reason the sell was triggered
         :return: True if it succeeds (supported) False (not supported)
         """
+        logger.info(f"execute_sell({trade.pair},{limit},{sell_reason}")
         sell_type = 'sell'
         if sell_reason in (SellType.STOP_LOSS, SellType.TRAILING_STOP_LOSS):
             sell_type = 'stoploss'
