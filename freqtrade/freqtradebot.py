@@ -460,7 +460,8 @@ class FreqtradeBot:
             logger.info(f"Bids to asks delta for {pair} does not satisfy condition.")
             return False
 
-    def execute_buy(self, pair: str, stake_amount: float, variant: int = 0, price: Optional[float] = None) -> bool:
+    def execute_buy(self, pair: str, stake_amount: float, variant: int = 0,
+                    price: Optional[float] = None) -> bool:
         """
         Executes a limit buy for the given pair
         :param pair: pair for which we want to create a LIMIT_BUY
@@ -821,7 +822,7 @@ class FreqtradeBot:
         current_stop_loss = trade.stop_loss
         if self.exchange.stoploss_adjust(trade.stop_loss, order):
             logger.info("handle_stoploss_on_exchange path 3")
-            logger.info(f"handle_trailing_stoploss_on_exchange({trade},{order})")
+            logger.info(f"handle_trailing_stoploss_on_exchange({trade}, {order})")
             # we check if the update is neccesary
             update_beat = self.strategy.order_types.get('stoploss_on_exchange_interval', 60)
             if (datetime.utcnow() - trade.stoploss_last_update).total_seconds() >= update_beat:
@@ -874,7 +875,7 @@ class FreqtradeBot:
         """
         Check and execute sell
         """
-        logger.info(f"_check_and_execute_sell({trade.pair},{sell_rate},{buy},{sell})")
+        logger.info(f"_check_and_execute_sell({trade.pair}, {sell_rate}, {buy}, {sell})")
         should_sell = self.strategy.should_sell(
             trade, sell_rate, datetime.utcnow(), buy, sell,
             force_stoploss=self.edge.stoploss(trade.pair) if self.edge else 0
