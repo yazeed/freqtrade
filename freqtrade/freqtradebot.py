@@ -440,8 +440,8 @@ class FreqtradeBot:
         """
         Checks depth of market before executing a buy
         """
+        logger.info(f"_check_depth_of_market_buy({pair}, {conf})")
         conf_bids_to_ask_delta = conf.get('bids_to_ask_delta', 0)
-        logger.info(f"Checking depth of market for {pair} ...")
         order_book = self.exchange.get_order_book(pair, 1000)
         order_book_data_frame = order_book_to_dataframe(order_book['bids'], order_book['asks'])
         order_book_bids = order_book_data_frame['b_size'].sum()
@@ -467,7 +467,7 @@ class FreqtradeBot:
         :param pair: pair for which we want to create a LIMIT_BUY
         :return: True if a buy order is created, false if it fails.
         """
-        logger.info(f"execute_buy({pair},{stake_amount},{price})")
+        logger.info(f"execute_buy({pair}, {stake_amount}, {price})")
         time_in_force = self.strategy.order_time_in_force['buy']
 
         if price:
