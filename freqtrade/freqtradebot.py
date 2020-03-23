@@ -882,9 +882,9 @@ class FreqtradeBot:
         )
 
         if should_sell.sell_flag:
-            logger.info(f'Executing Sell for {trade.pair}. Reason: {should_sell.sell_type}')
-            self.execute_sell(trade, sell_rate, should_sell.sell_type)
-            return True
+            executed_sell = self.execute_sell(trade, sell_rate, should_sell.sell_type)
+            logger.info(f"execute_sell returned {executed_sell}")
+            return executed_sell
         return False
 
     def _check_timed_out(self, side: str, order: dict) -> bool:
@@ -1049,7 +1049,7 @@ class FreqtradeBot:
         :param sellreason: Reason the sell was triggered
         :return: True if it succeeds (supported) False (not supported)
         """
-        logger.info(f"execute_sell({trade.pair},{limit},{sell_reason}")
+        logger.info(f"execute_sell({trade.pair}, {limit}, {sell_reason})")
         sell_type = 'sell'
         if sell_reason in (SellType.STOP_LOSS, SellType.TRAILING_STOP_LOSS):
             sell_type = 'stoploss'
