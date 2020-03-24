@@ -880,10 +880,11 @@ class FreqtradeBot:
             trade, sell_rate, datetime.utcnow(), buy, sell,
             force_stoploss=self.edge.stoploss(trade.pair) if self.edge else 0
         )
+        logger.info(f"should_sell() returned {should_sell}")
 
         if should_sell.sell_flag:
             executed_sell = self.execute_sell(trade, sell_rate, should_sell.sell_type)
-            logger.info(f"execute_sell returned {executed_sell}")
+            logger.info(f"execute_sell() returned {executed_sell}")
             return executed_sell
         return False
 
