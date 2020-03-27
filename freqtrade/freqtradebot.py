@@ -412,7 +412,7 @@ class FreqtradeBot:
 
         dataframe = self.dataprovider.ohlcv(pair, self.strategy.ticker_interval)
         latest = dataframe.iloc[-1]
-        close_price = float(arrow.get(latest['close']))
+        close_price = float(latest['close'])
 
         # running get_signal on historical data fetched
         (buy, sell, variant) = self.strategy.get_signal(
