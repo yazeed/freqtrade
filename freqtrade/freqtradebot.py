@@ -408,11 +408,6 @@ class FreqtradeBot:
             logger.debug(f"Can't open a new trade for {pair}: max number of trades is reached.")
             return False
 
-        stake_amount = self.get_trade_stake_amount(pair)
-        if not stake_amount:
-            logger.debug(f"Stake amount is 0, ignoring possible trade for {pair}.")
-            return False
-
         dataframe = self.dataprovider.ohlcv(pair, self.strategy.ticker_interval)
         latest = dataframe.iloc[-1]
         open_price = arrow.get(latest['open'])
@@ -422,6 +417,11 @@ class FreqtradeBot:
             pair, self.strategy.ticker_interval, dataframe)
 
         if buy and not sell:
+            stake_amount = self.get_trade_stake_amount(pair)
+            if not stake_amount:
+                logger.debug(f"Stake amount is 0, ignoring possible trade for {pair}.")
+                return False
+            
             logger.info(f"Buy signal found for {pair}: about create a new trade with stake_amount: "
                         f"{stake_amount} ...")
 
