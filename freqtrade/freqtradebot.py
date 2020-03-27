@@ -413,13 +413,16 @@ class FreqtradeBot:
             logger.debug(f"Stake amount is 0, ignoring possible trade for {pair}.")
             return False
 
+        dataframe = self.dataprovider.ohlcv(pair, self.strategy.ticker_interval)
+        latest = dataframe.iloc[-1]
+        open_price = arrow.get(latest['open'])
+
         # running get_signal on historical data fetched
         (buy, sell, variant) = self.strategy.get_signal(
-            pair, self.strategy.ticker_interval,
-            self.dataprovider.ohlcv(pair, self.strategy.ticker_interval))
+            pair, self.strategy.ticker_interval, dataframe)
 
         if buy and not sell:
-            logger.info(f"Buy signal found: about create a new trade with stake_amount: "
+            logger.info(f"Buy signal found for {pair}: about create a new trade with stake_amount: "
                         f"{stake_amount} ...")
 
             bid_check_dom = self.config.get('bid_strategy', {}).get('check_depth_of_market', {})
@@ -427,12 +430,12 @@ class FreqtradeBot:
                     (bid_check_dom.get('bids_to_ask_delta', 0) > 0)):
                 if self._check_depth_of_market_buy(pair, bid_check_dom):
                     logger.info(f'Executing Buy for {pair}.')
-                    return self.execute_buy(pair, stake_amount, variant)
+                    return self.execute_buy(pair, stake_amount, variant, open_price)
                 else:
                     return False
-
-            logger.info(f'Executing Buy for {pair}')
-            return self.execute_buy(pair, stake_amount, variant)
+            else:
+                logger.info(f'Executing Buy for {pair}')
+                return self.execute_buy(pair, stake_amount, variant, open_price)
         else:
             return False
 
@@ -469,8 +472,9 @@ class FreqtradeBot:
         """
         logger.info(f"execute_buy({pair}, {stake_amount}, {price})")
         time_in_force = self.strategy.order_time_in_force['buy']
+        order_type = self.strategy.order_types['buy']
 
-        if price:
+        if price and order_type == "limit":
             buy_limit_requested = price
         else:
             # Calculate price
@@ -488,7 +492,6 @@ class FreqtradeBot:
             return False
 
         amount = stake_amount / buy_limit_requested
-        order_type = self.strategy.order_types['buy']
         order = self.exchange.buy(pair=pair, ordertype=order_type,
                                   amount=amount, rate=buy_limit_requested,
                                   time_in_force=time_in_force)
