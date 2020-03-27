@@ -328,7 +328,7 @@ class IStrategy(ABC):
         :param force_stoploss: Externally provided stoploss
         :return: True if trade should be sold, False otherwise
         """
-        logger.debug(f"should_sell({trade.pair}, {rate}, {date}, {buy}, {sell})")
+        logger.info(f"should_sell({trade.pair}, {rate}, {date}, {buy}, {sell})")
         # Set current rate to low for backtesting sell
         current_rate = low or rate
         current_profit = trade.calc_profit_ratio(current_rate)
