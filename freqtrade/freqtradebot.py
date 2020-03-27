@@ -412,7 +412,7 @@ class FreqtradeBot:
 
         dataframe = self.dataprovider.ohlcv(pair, self.strategy.ticker_interval)
         latest = dataframe.iloc[-1]
-        open_price = arrow.get(latest['open'])
+        close_price = arrow.get(latest['close'])
 
         # running get_signal on historical data fetched
         (buy, sell, variant) = self.strategy.get_signal(
@@ -423,7 +423,7 @@ class FreqtradeBot:
             if not stake_amount:
                 logger.debug(f"Stake amount is 0, ignoring possible trade for {pair}.")
                 return False
-            
+
             logger.info(f"Buy signal found for {pair}: about create a new trade with stake_amount: "
                         f"{stake_amount} ...")
 
@@ -432,12 +432,12 @@ class FreqtradeBot:
                     (bid_check_dom.get('bids_to_ask_delta', 0) > 0)):
                 if self._check_depth_of_market_buy(pair, bid_check_dom):
                     logger.info(f'Executing Buy for {pair}.')
-                    return self.execute_buy(pair, stake_amount, variant, open_price)
+                    return self.execute_buy(pair, stake_amount, variant, close_price)
                 else:
                     return False
             else:
                 logger.info(f'Executing Buy for {pair}')
-                return self.execute_buy(pair, stake_amount, variant, open_price)
+                return self.execute_buy(pair, stake_amount, variant, close_price)
         else:
             return False
 
