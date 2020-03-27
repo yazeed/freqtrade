@@ -196,6 +196,7 @@ class Configuration:
         if self.args.get('exportfilename'):
             self._args_to_config(config, argname='exportfilename',
                                  logstring='Storing backtest results to {} ...')
+            config['exportfilename'] = Path(config['exportfilename'])
         else:
             config['exportfilename'] = (config['user_data_dir']
                                         / 'backtest_results/backtest-result.json')
@@ -282,6 +283,9 @@ class Configuration:
         self._args_to_config(config, argname='print_json',
                              logstring='Parameter --print-json detected ...')
 
+        self._args_to_config(config, argname='export_csv',
+                             logstring='Parameter --export-csv detected: {}')
+
         self._args_to_config(config, argname='hyperopt_jobs',
                              logstring='Parameter -j/--job-workers detected: {}')
 
@@ -354,6 +358,9 @@ class Configuration:
 
         self._args_to_config(config, argname='erase',
                              logstring='Erase detected. Deleting existing data.')
+
+        self._args_to_config(config, argname='no_trades',
+                             logstring='Parameter --no-trades detected.')
 
         self._args_to_config(config, argname='timeframes',
                              logstring='timeframes --timeframes: {}')

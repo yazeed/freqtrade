@@ -23,6 +23,8 @@ from joblib import (Parallel, cpu_count, delayed, dump, load,
                     wrap_non_picklable_objects)
 from pandas import DataFrame, json_normalize, isna
 import tabulate
+from os import path
+import io
 
 from freqtrade.data.converter import trim_dataframe
 from freqtrade.data.history import get_timerange
@@ -75,8 +77,8 @@ class Hyperopt:
 
         self.trials_file = (self.config['user_data_dir'] /
                             'hyperopt_results' / 'hyperopt_results.pickle')
-        self.tickerdata_pickle = (self.config['user_data_dir'] /
-                                  'hyperopt_results' / 'hyperopt_tickerdata.pkl')
+        self.data_pickle_file = (self.config['user_data_dir'] /
+                                 'hyperopt_results' / 'hyperopt_tickerdata.pkl')
         self.total_epochs = config.get('epochs', 0)
 
         self.current_best_loss = 100
@@ -130,7 +132,7 @@ class Hyperopt:
         """
         Remove hyperopt pickle files to restart hyperopt.
         """
-        for f in [self.tickerdata_pickle, self.trials_file]:
+        for f in [self.data_pickle_file, self.trials_file]:
             p = Path(f)
             if p.is_file():
                 logger.info(f"Removing `{p}`.")
@@ -330,10 +332,10 @@ class Hyperopt:
             lambda x: '{}/{}'.format(str(x).rjust(len(str(total_epochs)), ' '), total_epochs)
         )
         trials['Avg profit'] = trials['Avg profit'].apply(
-            lambda x: ('{:,.2f}%'.format(x)).rjust(7, ' ') if not isna(x) else "--".rjust(7, ' ')
+            lambda x: '{:,.2f}%'.format(x).rjust(7, ' ') if not isna(x) else "--".rjust(7, ' ')
         )
         trials['Avg duration'] = trials['Avg duration'].apply(
-            lambda x: ('{:,.1f} m'.format(x)).rjust(7, ' ') if not isna(x) else "--".rjust(7, ' ')
+            lambda x: '{:,.1f} m'.format(x).rjust(7, ' ') if not isna(x) else "--".rjust(7, ' ')
         )
         trials['Objective'] = trials['Objective'].apply(
             lambda x: '{:,.5f}'.format(x).rjust(8, ' ') if x != 100000 else "N/A".rjust(8, ' ')
@@ -380,6 +382,62 @@ class Hyperopt:
                 headers='keys', stralign="right"
             )
         print(table)
+
+    @staticmethod
+    def export_csv_file(config: dict, results: list, total_epochs: int, highlight_best: bool,
+                        csv_file: str) -> None:
+        """
+        Log result to csv-file
+        """
+        if not results:
+            return
+
+        # Verification for overwrite
+        if path.isfile(csv_file):
+            logger.error("CSV-File already exists!")
+            return
+
+        try:
+            io.open(csv_file, 'w+').close()
+        except IOError:
+            logger.error("Filed to create CSV-File!")
+            return
+
+        trials = json_normalize(results, max_level=1)
+        trials['Best'] = ''
+        trials['Stake currency'] = config['stake_currency']
+        trials = trials[['Best', 'current_epoch', 'results_metrics.trade_count',
+                         'results_metrics.avg_profit', 'results_metrics.total_profit',
+                         'Stake currency', 'results_metrics.profit', 'results_metrics.duration',
+                         'loss', 'is_initial_point', 'is_best']]
+        trials.columns = ['Best', 'Epoch', 'Trades', 'Avg profit', 'Total profit', 'Stake currency',
+                          'Profit', 'Avg duration', 'Objective', 'is_initial_point', 'is_best']
+        trials['is_profit'] = False
+        trials.loc[trials['is_initial_point'], 'Best'] = '*'
+        trials.loc[trials['is_best'], 'Best'] = 'Best'
+        trials.loc[trials['Total profit'] > 0, 'is_profit'] = True
+        trials['Epoch'] = trials['Epoch'].astype(str)
+        trials['Trades'] = trials['Trades'].astype(str)
+
+        trials['Total profit'] = trials['Total profit'].apply(
+            lambda x: '{:,.8f}'.format(x) if x != 0.0 else ""
+        )
+        trials['Profit'] = trials['Profit'].apply(
+            lambda x: '{:,.2f}'.format(x) if not isna(x) else ""
+        )
+        trials['Avg profit'] = trials['Avg profit'].apply(
+            lambda x: '{:,.2f}%'.format(x) if not isna(x) else ""
+        )
+        trials['Avg duration'] = trials['Avg duration'].apply(
+            lambda x: '{:,.1f} m'.format(x) if not isna(x) else ""
+        )
+        trials['Objective'] = trials['Objective'].apply(
+            lambda x: '{:,.5f}'.format(x) if x != 100000 else ""
+        )
+
+        trials = trials.drop(columns=['is_initial_point', 'is_best', 'is_profit'])
+        trials.to_csv(csv_file, index=False, header=True, mode='w', encoding='UTF-8')
+        print("CSV-File created!")
 
     def has_space(self, space: str) -> bool:
         """
@@ -454,7 +512,7 @@ class Hyperopt:
             self.backtesting.strategy.trailing_only_offset_is_reached = \
                 d['trailing_only_offset_is_reached']
 
-        processed = load(self.tickerdata_pickle)
+        processed = load(self.data_pickle_file)
 
         min_date, max_date = get_timerange(processed)
 
@@ -570,7 +628,7 @@ class Hyperopt:
         self.hyperopt_table_header = -1
         data, timerange = self.backtesting.load_bt_data()
 
-        preprocessed = self.backtesting.strategy.tickerdata_to_dataframe(data)
+        preprocessed = self.backtesting.strategy.ohlcvdata_to_dataframe(data)
 
         # Trim startup period from analyzed dataframe
         for pair, df in preprocessed.items():
@@ -581,7 +639,7 @@ class Hyperopt:
             'Hyperopting with data from %s up to %s (%s days)..',
             min_date.isoformat(), max_date.isoformat(), (max_date - min_date).days
         )
-        dump(preprocessed, self.tickerdata_pickle)
+        dump(preprocessed, self.data_pickle_file)
 
         # We don't need exchange instance anymore while running hyperopt
         self.backtesting.exchange = None  # type: ignore

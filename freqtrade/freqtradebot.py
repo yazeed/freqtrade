@@ -404,6 +404,8 @@ class FreqtradeBot:
             logger.info(f"Pair {pair} is currently locked.")
             return False
 
+        # get_free_open_trades is checked before create_trade is called
+        # but it is still used here to prevent opening too many trades within one iteration
         if not self.get_free_open_trades():
             logger.debug(f"Can't open a new trade for {pair}: max number of trades is reached.")
             return False
@@ -649,7 +651,7 @@ class FreqtradeBot:
 
     def get_sell_rate(self, pair: str, refresh: bool) -> float:
         """
-        Get sell rate - either using get-ticker bid or first bid based on orderbook
+        Get sell rate - either using ticker bid or first bid based on orderbook
         The orderbook portion is only used for rpc messaging, which would otherwise fail
         for BitMex (has no bid/ask in fetch_ticker)
         or remain static in any other case since it's not updating.
@@ -1011,6 +1013,7 @@ class FreqtradeBot:
 
             trade.close_rate = None
             trade.close_profit = None
+            trade.close_profit_abs = None
             trade.close_date = None
             trade.is_open = True
             trade.open_order_id = None
@@ -1106,7 +1109,7 @@ class FreqtradeBot:
         """
         profit_rate = trade.close_rate if trade.close_rate else trade.close_rate_requested
         profit_trade = trade.calc_profit(rate=profit_rate)
-        # Use cached ticker here - it was updated seconds ago.
+        # Use cached rates here - it was updated seconds ago.
         current_rate = self.get_sell_rate(trade.pair, False)
         profit_ratio = trade.calc_profit_ratio(profit_rate)
         gain = "profit" if profit_ratio > 0 else "loss"
