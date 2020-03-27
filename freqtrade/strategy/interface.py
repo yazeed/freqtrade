@@ -356,7 +356,7 @@ class IStrategy(ABC):
 
         # Check if minimal roi has been reached and no longer in buy conditions (avoiding a fee)
         if self.min_roi_reached(trade=trade, current_profit=current_profit, current_time=date):
-            logger.debug(f"{trade.pair} - Required profit reached. sell_flag=True, "
+            logger.info(f"{trade.pair} - Required profit reached. sell_flag=True, "
                          f"sell_type=SellType.ROI")
             return SellCheckTuple(sell_flag=True, sell_type=SellType.ROI)
 
