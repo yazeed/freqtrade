@@ -424,7 +424,7 @@ class FreqtradeBot:
                 logger.debug(f"Stake amount is 0, ignoring possible trade for {pair}.")
                 return False
 
-            logger.info(f"Buy signal found for {pair}: about create a new trade with stake_amount: "
+            logger.info(f"Buy signal found for {pair}: about to create a new trade at {close_price} with stake_amount: "
                         f"{stake_amount} ...")
 
             bid_check_dom = self.config.get('bid_strategy', {}).get('check_depth_of_market', {})
