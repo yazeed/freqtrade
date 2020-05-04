@@ -419,6 +419,19 @@ class FreqtradeBot:
             pair, self.strategy.ticker_interval, dataframe)
 
         if buy and not sell:
+            buy_rate = self.get_buy_rate(pair, True)
+            self.rpc.send_msg({
+                'type': RPCMessageType.STATUS_NOTIFICATION,
+                'status': f'{self.strategy.ticker_interval} LONG signal found for {pair} at {buy_rate}'
+            })
+        elif sell and not buy:
+            sell_rate = self.get_sell_rate(pair, True)
+            self.rpc.send_msg({
+                'type': RPCMessageType.STATUS_NOTIFICATION,
+                'status': f'{self.strategy.ticker_interval} SHORT signal found for {pair} at {sell_rate}'
+            })
+
+        if buy and not sell:
             stake_amount = self.get_trade_stake_amount(pair)
             if not stake_amount:
                 logger.debug(f"Stake amount is 0, ignoring possible trade for {pair}.")
